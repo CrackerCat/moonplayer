@@ -17,10 +17,10 @@ void initExtractors()
     while (!list.isEmpty())
     {
         QString filename = list.takeFirst();
-        if (filename.startsWith("ext_") && filename.endsWith(".py"))
+        if (filename.startsWith("ext_") && filename.endsWith(".js"))
         {
             bool ok = false;
-            Extractor *extractor = new Extractor(filename.section('.', 0, 0), &ok);
+            Extractor *extractor = new Extractor(pluginsDir.filePath(filename), &ok);
             if (ok)
             {
                 array[n_extractors] = extractor;
@@ -36,53 +36,17 @@ void initExtractors()
 }
 
 
-Extractor::Extractor(const QString &name, bool *ok)
+Extractor::Extractor(const QString &filename, bool *ok, QObject *parent) :
+    PluginBase(filename, ok, parent)
 {
-    module = parseFunc = NULL;
-    module = PyImport_ImportModule(name.toUtf8().constData());
-    if (module == NULL)
-    {
-        printPythonException();
-        *ok = false;
-        return;
-    }
-
-    PyObject *hosts = PyObject_GetAttrString(module, "supported_hosts");
-    if (hosts == NULL)
-    {
-        printPythonException();
-        *ok = false;
-        return;
-    }
-    for (int i = 0; i < PyTuple_Size(hosts); i++)
-        supportedHosts << PyString_AsQString(PyTuple_GetItem(hosts, i));
-    Py_DecRef(hosts);
-
-    parseFunc = PyObject_GetAttrString(module, "parse");
-    if (parseFunc == NULL)
-    {
-        printPythonException();
-        *ok = false;
-        return;
-    }
-
-    PyObject *url_pattern = PyObject_GetAttrString(module, "url_pattern");
-    if (url_pattern == NULL)
-    {
-        printPythonException();
-        *ok = false;
-        return;
-    }
-    urlPattern = QRegularExpression(PyString_AsQString(url_pattern),
+    // hosts, urlpatterns and parseFunc
+    supportedHosts = globalObject().property("supported_hosts").toVariant().toStringList();
+    urlPattern = QRegularExpression(globalObject().property("url_pattern").toString(),
                                     QRegularExpression::DotMatchesEverythingOption);
-    Py_DecRef(url_pattern);
-    *ok = true;
-}
+    parseFunc = globalObject().property("parse");
 
-Extractor::~Extractor()
-{
-    Py_DecRef(module);
-    Py_DecRef(parseFunc);
+    // ok
+    *ok = true;
 }
 
 
@@ -105,15 +69,12 @@ Extractor *Extractor::getMatchedExtractor(const QString &url)
 
 QString Extractor::parse(const QByteArray &data)
 {
-    PyObject *result = PyObject_CallFunction(parseFunc, "s", data.constData());
-    if (result == NULL)
-        return QString("Python Exception:\n%1\n\nResponse Content:\n%2").arg(
-                    fetchPythonException(), QString::fromUtf8(data));
-    else
-    {
-        Py_DecRef(result);
-        return QString();
-    }
+    QJSValueList args;
+    args << QString::fromUtf8(data);
+    QJSValue result = parseFunc.call(args);
+    if (result.isError())
+        return "JS Error: " + result.toString() + "\n\nResponse Content: " + QString::fromUtf8(data);
+    return QString();
 }
 
 bool Extractor::isSupported(const QString &host)

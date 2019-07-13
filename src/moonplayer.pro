@@ -18,7 +18,7 @@ win32 {
 }
 
 
-QT += core gui network xml widgets
+QT += core gui network xml widgets qml
 unix:!macx: QT += gui-private x11extras
 
 macx:  TARGET = MoonPlayer
@@ -56,7 +56,9 @@ SOURCES += \
     upgraderdialog.cpp \
     utils.cpp \
     videocombiner.cpp \
-    platform/paths.cpp
+    platform/paths.cpp \
+    jsapi.cpp \
+    pluginbase.cpp
 
 HEADERS  +=\
     aboutdialog.h \
@@ -94,7 +96,9 @@ HEADERS  +=\
     videocombiner.h \
     platform/application.h \
     platform/detectopengl.h \
-    platform/paths.h
+    platform/paths.h \
+    jsapi.h \
+    pluginbase.h
 
 
 # Platform specific source codes

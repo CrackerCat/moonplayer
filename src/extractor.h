@@ -1,24 +1,31 @@
 #ifndef EXTRACTOR_H
 #define EXTRACTOR_H
 
-#include "python_wrapper.h"
+#include "pluginbase.h"
+#include <QJSValue>
 #include <QByteArray>
 #include <QRegularExpression>
 
-class Extractor
+class Extractor : public PluginBase
 {
+    Q_OBJECT
 public:
-    Extractor(const QString &name, bool *ok);
-    ~Extractor();
-    QString parse(const QByteArray &data); // Parse the catched data, return error string
-    bool match(const QString &url);        // Check if the catched data with url can be processed
+    Extractor(const QString &filename, bool *ok, QObject *parent = NULL);
 
-    static bool isSupported(const QString &host);  // Check if the website with host can be extracted
+    // Parse the catched data, return error string
+    QString parse(const QByteArray &data);
+
+    // Check if the catched data with url can be processed
+    bool match(const QString &url);
+
+    // Check if the website with host can be extracted
+    static bool isSupported(const QString &host);
+
+    // Get matched extractor
     static Extractor *getMatchedExtractor(const QString &url);
 
 private:
-    PyObject *module;
-    PyObject *parseFunc;
+    QJSValue parseFunc;
     QRegularExpression urlPattern;
     static QStringList supportedHosts;
 };
