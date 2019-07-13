@@ -11,6 +11,8 @@ class JSAPI : public QObject
 public:
     explicit JSAPI(QObject *parent = nullptr);
 
+    Q_INVOKABLE void get_content(const QString &url, const QJSValue &callbackFunc);
+    Q_INVOKABLE void post_content(const QString &url, const QByteArray &postData, const QJSValue &callbackFunc);
     Q_INVOKABLE void finish_parsing(const QJSValue &dict);
 };
 
