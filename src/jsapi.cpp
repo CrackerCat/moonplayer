@@ -5,6 +5,7 @@
 #include <QVariant>
 #include "accessmanager.h"
 #include "parserwebcatch.h"
+#include "reslibrary.h"
 
 JSAPI apiObject;
 
@@ -66,7 +67,37 @@ void JSAPI::post_content(const QString &url, const QByteArray &postData, const Q
     get_post_content(url, postData, callbackFunc);
 }
 
+// Dialog functions
+void JSAPI::warning(const QString &msg)
+{
+    QMessageBox::warning(NULL, "Warning", msg);
+}
 
+bool JSAPI::question(const QString &msg)
+{
+    return QMessageBox::question(NULL, "question", msg, QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes;
+}
+
+
+// Show resource list
+void JSAPI::show_resources(const QJSValue &list)
+{
+    QVariantList resList = list.toVariant().toList();
+    foreach (QVariant item, resList) {
+        QVariantHash dict = item.toHash();
+        res_library->addItem(dict["title"].toString(), dict["url"].toString(), dict["image_url"].toString());
+    }
+}
+
+
+// Show detail view
+void JSAPI::show_detail(const QJSValue &detail)
+{
+    res_library->openDetailPage(detail.toVariant().toHash());
+}
+
+
+// Finish video parsing
 void JSAPI::finish_parsing(const QJSValue &dict)
 {
 #ifdef MP_ENABLE_WEBENGINE
