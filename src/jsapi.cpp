@@ -82,6 +82,7 @@ bool JSAPI::question(const QString &msg)
 // Show resource list
 void JSAPI::show_resources(const QJSValue &list)
 {
+    res_library->clearItem();
     QVariantList resList = list.toVariant().toList();
     foreach (QVariant item, resList) {
         QVariantHash dict = item.toHash();

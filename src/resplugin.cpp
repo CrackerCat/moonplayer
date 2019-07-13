@@ -19,10 +19,10 @@ void initResPlugins()
     while (!list.isEmpty())
     {
         QString filename = list.takeFirst();
-        if (filename.startsWith("res_") && filename.endsWith(".py"))
+        if (filename.startsWith("res_") && filename.endsWith(".js"))
         {
             bool ok = false;
-            ResPlugin *plugin = new ResPlugin(filename.section('.', 0, 0), &ok);
+            ResPlugin *plugin = new ResPlugin(pluginsDir.filePath(filename), &ok);
             if (ok)
             {
                 array[n_resplugins] = plugin;
@@ -37,103 +37,51 @@ void initResPlugins()
     }
 }
 
-ResPlugin::ResPlugin(const QString &pluginName, bool *ok)
-{
-    //load module
-    module = searchFunc = exploreFunc = loadItemFunc = NULL;
-    module = PyImport_ImportModule(pluginName.toUtf8().constData());
-    if (module == NULL)
-    {
-        printPythonException();
-        *ok = false;
-        return;
-    }
 
+ResPlugin::ResPlugin(const QString &filename, bool *ok, QObject *parent) :
+    PluginBase(filename, ok, parent)
+{
     //get name
-    PyObject *_name = PyObject_GetAttrString(module, "res_name");
-    if (_name)
-    {
-        name = PyString_AsQString(_name);
-        Py_DecRef(_name);
-    }
-    else
-    {
-        PyErr_Clear();
-        name = pluginName.mid(4);
-    }
+    name = globalObject().property("res_name").toString();
+    if (name.isEmpty())
+        name = filename.section("res_", -1).replace(".js", "");
 
     //get search() and load_item()
-    searchFunc = PyObject_GetAttrString(module, "search");
-    exploreFunc = PyObject_GetAttrString(module, "explore");
-    loadItemFunc = PyObject_GetAttrString(module, "load_item");
-    if (searchFunc == NULL || loadItemFunc == NULL || exploreFunc == NULL)
-    {
-        printPythonException();
-        *ok = false;
-        return;
-    }
+    searchFunc = globalObject().property("search");
+    exploreFunc = globalObject().property("explore");
+    loadItemFunc = globalObject().property("load_item");
 
-    //get tags
-    PyObject *tags = PyObject_GetAttrString(module, "tags");
-    if (tags == NULL)
-    {
-        printPythonException();
-        *ok = false;
-        return;
-    }
-    tagsList = PyList_AsQStringList(tags);
-    Py_DecRef(tags);
+    //get tags and regions
+    tagsList = globalObject().property("tags").toVariant().toStringList();
+    regionsList = globalObject().property("regions").toVariant().toStringList();
 
-    //get countries
-    PyObject *countries = PyObject_GetAttrString(module, "countries");
-    if (countries == NULL)
-    {
-        printPythonException();
-        *ok = false;
-        return;
-    }
-    countriesList = PyList_AsQStringList(countries);
-    Py_DecRef(countries);
-
-    // Add to __main__ namespace
-    PyRun_SimpleString(QString("import %1").arg(pluginName).toUtf8().constData());
     *ok = true;
 }
 
-ResPlugin::~ResPlugin()
-{
-    Py_DecRef(module);
-    Py_DecRef(searchFunc);
-    Py_DecRef(exploreFunc);
-    Py_DecRef(loadItemFunc);
-}
 
-void ResPlugin::explore(const QString &tag, const QString &country, int page)
+void ResPlugin::explore(const QString &tag, const QString &region, int page)
 {
-    PyObject *retVal = PyObject_CallFunction(exploreFunc, "ssi",
-                                             tag.toUtf8().constData(),
-                                             country.toUtf8().constData(),
-                                             page);
-    if (retVal)
-        Py_DecRef(retVal);
-    else
-        printPythonException();
+    QJSValueList args;
+    args << tag << region << page;
+    QJSValue retVal = exploreFunc.call(args);
+    if (retVal.isError())
+        qDebug("JS Error:\n    In line %i:\n    %s", retVal.property("lineNumber").toInt(), retVal.toString().toUtf8().constData());
 }
 
 void ResPlugin::search(const QString &key, int page)
 {
-    PyObject *retVal = PyObject_CallFunction(searchFunc, "si", key.toUtf8().constData(), page);
-    if (retVal)
-        Py_DecRef(retVal);
-    else
-        printPythonException();
+    QJSValueList args;
+    args << key << page;
+    QJSValue retVal = searchFunc.call(args);
+    if (retVal.isError())
+        qDebug("JS Error:\n    In line %i:\n    %s", retVal.property("lineNumber").toInt(), retVal.toString().toUtf8().constData());
 }
 
 void ResPlugin::loadItem(const QString &flag)
 {
-    PyObject *retVal = PyObject_CallFunction(loadItemFunc, "s", flag.toUtf8().constData());
-    if (retVal)
-        Py_DecRef(retVal);
-    else
-        printPythonException();
+    QJSValueList args;
+    args << flag;
+    QJSValue retVal = loadItemFunc.call(args);
+    if (retVal.isError())
+        qDebug("JS Error:\n    In line %i:\n    %s", retVal.property("lineNumber").toInt(), retVal.toString().toUtf8().constData());
 }

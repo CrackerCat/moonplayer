@@ -28,4 +28,5 @@ PluginBase::PluginBase(const QString &filename, bool *ok, QObject *parent) :
         *ok = false;
         return;
     }
+    *ok = true;
 }

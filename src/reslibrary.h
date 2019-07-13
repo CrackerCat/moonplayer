@@ -27,7 +27,7 @@ private:
     int current_plugin;
     int current_page;
     QString current_tag;
-    QString current_country;
+    QString current_region;
     QString current_key;
     MyListWidget *listWidget;
     DetailView *detailView;

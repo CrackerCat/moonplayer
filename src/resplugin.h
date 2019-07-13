@@ -1,29 +1,29 @@
 #ifndef RESPLUGIN_H
 #define RESPLUGIN_H
 
-#include "python_wrapper.h"
+#include "pluginbase.h"
 #include <QStringList>
 
-class ResPlugin
+class ResPlugin: public PluginBase
 {
+    Q_OBJECT
 public:
-    ResPlugin(const QString &pluginName, bool *ok);
-    ~ResPlugin();
-    void explore(const QString &tag, const QString &country, int page);
+    ResPlugin(const QString &filename, bool *ok, QObject *parent = NULL);
+    void explore(const QString &tag, const QString &region, int page);
     void search(const QString &key, int page);
     void loadItem(const QString &flag);
     inline QString &getName(){return name;}
 
     QStringList tagsList;
-    QStringList countriesList;
+    QStringList regionsList;
 
 private:
     QString name;
-    PyObject *module;
-    PyObject *searchFunc;
-    PyObject *exploreFunc;
-    PyObject *loadItemFunc;
+    QJSValue searchFunc;
+    QJSValue exploreFunc;
+    QJSValue loadItemFunc;
 };
+
 extern ResPlugin **resplugins;
 extern int n_resplugins;
 void initResPlugins(void);

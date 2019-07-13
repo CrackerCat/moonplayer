@@ -42,7 +42,7 @@ ResLibrary::ResLibrary(QWidget *parent) :
         layout->addWidget(buttonGroup);
 
         layout->addWidget(new QLabel(tr("Regions:")));
-        buttonGroup = new MyButtonGroup(plugin->countriesList);
+        buttonGroup = new MyButtonGroup(plugin->regionsList);
         connect(buttonGroup, SIGNAL(selectedChanged()), this, SLOT(reSearch()));
         layout->addWidget(buttonGroup);
     }
@@ -50,7 +50,7 @@ ResLibrary::ResLibrary(QWidget *parent) :
     {
         current_plugin = 0;
         current_tag = resplugins[0]->tagsList[0];
-        current_country = resplugins[0]->countriesList[0];
+        current_region = resplugins[0]->regionsList[0];
         current_page = 1;
     }
     else
@@ -81,13 +81,13 @@ void ResLibrary::reSearch()
     }
     QList<MyButtonGroup*> groups = ui->stackedWidget->currentWidget()->findChildren<MyButtonGroup*>();
     current_tag = groups[0]->selectedText();
-    current_country = groups[1]->selectedText();
+    current_region = groups[1]->selectedText();
     current_plugin = ui->stackedWidget->currentIndex();
     current_key = QString();
     current_page = 1;
     ui->pageSpinBox->setValue(1);
     ui->prevPushButton->setEnabled(false);
-    resplugins[current_plugin]->explore(current_tag, current_country, 1);
+    resplugins[current_plugin]->explore(current_tag, current_region, 1);
 }
 
 void ResLibrary::keySearch()
@@ -132,7 +132,7 @@ void ResLibrary::onPageChanged(int newPage)
         else
             ui->prevPushButton->setEnabled(true);
         if (current_key.isEmpty())
-            resplugins[current_plugin]->explore(current_tag, current_country, newPage);
+            resplugins[current_plugin]->explore(current_tag, current_region, newPage);
         else
             resplugins[current_plugin]->search(current_key, newPage);
     }
