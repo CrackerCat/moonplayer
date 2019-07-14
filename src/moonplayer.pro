@@ -67,6 +67,7 @@ HEADERS  +=\
     downloader.h \
     downloaderitem.h \
     httpget.h \
+    jsapi.h \
     mybuttongroup.h \
     mylistwidget.h \
     parserbase.h \
@@ -75,6 +76,7 @@ HEADERS  +=\
     playercore.h \
     playerview.h \
     playlist.h \
+    pluginbase.h \
     reslibrary.h \
     resplugin.h \
     selectiondialog.h \
@@ -91,9 +93,7 @@ HEADERS  +=\
     videocombiner.h \
     platform/application.h \
     platform/detectopengl.h \
-    platform/paths.h \
-    jsapi.h \
-    pluginbase.h
+    platform/paths.h
 
 
 # Platform specific source codes
