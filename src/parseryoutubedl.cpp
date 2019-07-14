@@ -1,7 +1,6 @@
 #include "parseryoutubedl.h"
 #include "accessmanager.h"
 #include "platform/paths.h"
-#include "python_wrapper.h"
 #include "settings_network.h"
 #include <QDir>
 #include <QGridLayout>
@@ -58,7 +57,7 @@ void ParserYoutubeDL::runParser(const QString &url)
     else if (!Settings::proxy.isEmpty() && Settings::proxyType == "socks5")
         args << "--proxy" << QString("socks5://%1:%2/").arg(Settings::proxy, QString::number(Settings::port));
     args << url;
-    process->start(PYTHON_BIN, args, QProcess::ReadOnly);
+    process->start(PYTHON_PATH, args, QProcess::ReadOnly);
     msgWindow->show();
 }
 

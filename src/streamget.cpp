@@ -3,7 +3,6 @@
 #include <QProcess>
 #include <QUrl>
 #include "platform/paths.h"
-#include "python_wrapper.h"
 #include "settings_network.h"
 
 StreamGet::StreamGet(const QUrl &url, const QString &filename, QObject *parent) :
@@ -23,7 +22,7 @@ void StreamGet::start()
     process = new QProcess(this);
     connect(process, SIGNAL(finished(int)), this, SLOT(onProcFinished(int)));
     connect(process, &QProcess::readyReadStandardOutput, this, &StreamGet::readOutput);
-    process->start(PYTHON_BIN, args);
+    process->start(PYTHON_PATH, args);
     emit progressChanged(0, true);
 }
 

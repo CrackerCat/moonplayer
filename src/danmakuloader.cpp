@@ -6,18 +6,15 @@
 #include <QDir>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QProcess>
 #include <QTimer>
-
-#if PY_MAJOR_VERSION >=3
-#define DANMAKU2ASS "danmaku2ass_py3"
-#else
-#define DANMAKU2ASS "danmaku2ass_py2"
-#endif
+#include "platform/paths.h"
 
 DanmakuLoader::DanmakuLoader(QObject *parent) : QObject(parent)
 {
-    module = danmaku2assFunc = NULL;
     reply = NULL;
+    process = new QProcess(this);
+    connect(process, SIGNAL(finished(int)), this, SLOT(onProcessFinished()));
 }
 
 void DanmakuLoader::reload()
@@ -59,96 +56,65 @@ void DanmakuLoader::onXmlDownloaded()
 {
     if (reply->error() == QNetworkReply::NoError)
     {
-        if (danmaku2assFunc == NULL)
-        {
-            if ((module = PyImport_ImportModule(DANMAKU2ASS)) == NULL)
-            {
-                printPythonException();
-                exit(EXIT_FAILURE);
-            }
-            if ((danmaku2assFunc = PyObject_GetAttrString(module, "Danmaku2ASS")) == NULL)
-            {
-                printPythonException();
-                exit(EXIT_FAILURE);
-            }
-        }
+        QStringList args;
 
         // Output file
-        QByteArray output_file = QDir::temp().filePath("moonplayer_danmaku.ass").toUtf8();
+        outputFile = QDir::temp().filePath("moonplayer_danmaku.ass").toUtf8();
+        args << "-o" << outputFile;
 
         // Font
 #ifdef Q_OS_MAC
-        QByteArray font = Settings::danmakuFont.isEmpty() ? "PingFang SC" : Settings::danmakuFont.toUtf8();
+        args << "-fn" << (Settings::danmakuFont.isEmpty() ? "PingFang SC" : Settings::danmakuFont.toUtf8());
 #else
-        QByteArray font = Settings::danmakuFont.isEmpty() ? "sans-serif" : Settings::danmakuFont.toUtf8();
+        args << "-fn" << (Settings::danmakuFont.isEmpty() ? "sans-serif" : Settings::danmakuFont.toUtf8());
 #endif
 
         // Font size
-        int fs;
+        args << "-fs";
         if (Settings::danmakuSize)
-            fs = Settings::danmakuSize;
+            args << QString::number(Settings::danmakuSize);
         else
         {
             if (width > 960)
-                fs = 36;
+                args << "36";
             else if (width > 640)
-                fs = 32;
+                args << "32";
             else
-                fs = 28;
+                args << "28";
         }
 
         // Duration of comment display
-        int dm;
+        args << "-dm";
         if (Settings::durationScrolling)
-            dm = Settings::durationScrolling;
+            args << QString::number(Settings::durationScrolling);
         else
         {
             if (width > 960)
-                dm = 9;
+                args << "10";
             else if (width > 640)
-                dm = 7;
+                args << "8";
             else
-                dm = 6;
+                args << "6";
         }
 
-        // Run parser
-        /* API definition:
-         * def Danmaku2ASS(input_files,
-         *                 input_format,
-         *                 output_file,
-         *                 stage_width,
-         *                 stage_height,
-         *                 reserve_blank=0,
-         *                 font_face=_('(FONT) sans-serif')[7:],
-         *                 font_size=25.0,
-         *                 text_opacity=1.0,
-         *                 duration_marquee=5.0,
-         *                 duration_still=5.0,
-         *                 comment_filter=None,
-         *                 is_reduce_comments=False,
-         *                 progress_callback=None)
-         */
-        PyObject *result = PyObject_CallFunction(danmaku2assFunc, "sssiiisdddd",
-                                                 reply->readAll().constData(),
-                                                 "autodetect",
-                                                 output_file.constData(),
-                                                 width,
-                                                 height,
-                                                 0,
-                                                 font.constData(),
-                                                 (double) fs,
-                                                 Settings::danmakuAlpha,
-                                                 (double) dm,
-                                                 (double) Settings::durationStill
-                                                 );
-        if (result) // success
-        {
-            Py_DecRef(result);
-            emit finished(output_file);
-        }
-        else
-            printPythonException();
+        // Duration of still danmaku
+        args << "-ds" << QString::number(Settings::durationStill);
+
+        // text opacity
+        args << "-a" << QString::number(Settings::danmakuAlpha);
+
+        // input
+        args << "/dev/stdin";
+
+        // run
+        process->start(PYTHON_PATH, args);
+        process->write(reply->readAll());
     }
     reply->deleteLater();
     reply = NULL;
+}
+
+void DanmakuLoader::onProcessFinished()
+{
+    emit finished(outputFile);
 }

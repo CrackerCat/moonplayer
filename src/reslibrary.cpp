@@ -5,7 +5,6 @@
 #include "detailview.h"
 #include "downloader.h"
 #include "mybuttongroup.h"
-#include "pyapi.h"
 #include "mylistwidget.h"
 #include <QMessageBox>
 #include <QLabel>
@@ -74,11 +73,6 @@ ResLibrary::ResLibrary(QWidget *parent) :
 
 void ResLibrary::reSearch()
 {
-    if (geturl_obj->hasTask())
-    {
-        QMessageBox::warning(this, "warning", tr("Another file is parsing. Please wait."));
-        return;
-    }
     QList<MyButtonGroup*> groups = ui->stackedWidget->currentWidget()->findChildren<MyButtonGroup*>();
     current_tag = groups[0]->selectedText();
     current_region = groups[1]->selectedText();
@@ -92,11 +86,6 @@ void ResLibrary::reSearch()
 
 void ResLibrary::keySearch()
 {
-    if (geturl_obj->hasTask())
-    {
-        QMessageBox::warning(this, "warning", tr("Another file is parsing. Please wait."));
-        return;
-    }
     current_key = ui->keyLineEdit->text();
     current_plugin = ui->pluginComboBox->currentIndex();
     current_page = 1;
@@ -107,11 +96,6 @@ void ResLibrary::keySearch()
 
 void ResLibrary::onItemDoubleClicked(QListWidgetItem *item)
 {
-    if (geturl_obj->hasTask())
-    {
-        QMessageBox::warning(this, "warning", tr("Another file is parsing. Please wait."));
-        return;
-    }
     MyListWidgetItem *res_item = static_cast<MyListWidgetItem*>(item);
     resplugins[current_plugin]->loadItem(res_item->flag());
 }
@@ -119,11 +103,6 @@ void ResLibrary::onItemDoubleClicked(QListWidgetItem *item)
 // Set page
 void ResLibrary::onPageChanged(int newPage)
 {
-    if (geturl_obj->hasTask())
-    {
-        QMessageBox::warning(this, "warning", tr("Another file is parsing. Please wait."));
-        return;
-    }
     if (newPage != current_page)
     {
         current_page = newPage;

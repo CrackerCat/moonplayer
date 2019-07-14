@@ -3,6 +3,12 @@
 
 #include <QString>
 
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
+#define PYTHON_PATH "python3"
+#else
+#define PYTHON_PATH "python"
+#endif
+
 QString getAppPath(void);
 QString getUserPath(void);
 void createUserPath(void);

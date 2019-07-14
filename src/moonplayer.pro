@@ -13,7 +13,6 @@
 
 # Library paths on Windows
 win32 {
-    !defined(PYTHON2_PATH,var) { PYTHON2_PATH=C:\\Python27 }
     !defined(LIBMPV_PATH,var) { LIBMPV_PATH=D:\\Develop\\mpv-dev }
 }
 
@@ -45,8 +44,6 @@ SOURCES += \
     playercore.cpp \
     playerview.cpp \
     playlist.cpp \
-    pyapi.cpp \
-    python_wrapper.cpp \
     reslibrary.cpp \
     resplugin.cpp \
     selectiondialog.cpp \
@@ -78,8 +75,6 @@ HEADERS  +=\
     playercore.h \
     playerview.h \
     playlist.h \
-    pyapi.h \
-    python_wrapper.h \
     reslibrary.h \
     resplugin.h \
     selectiondialog.h \
@@ -199,25 +194,17 @@ win32: RC_FILE = icon.rc
 # Libraries
 unix:!macx {
     CONFIG += link_pkgconfig
-    PKGCONFIG += python3 mpv
+    PKGCONFIG += mpv
 }
 
 macx {
-    INCLUDEPATH += /System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
-        /usr/local/include
-    LIBS += -F /System/Library/Frameworks -framework CoreFoundation \
-        -L/usr/lib -ldl \
-        -L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config -lpython2.7 \
-        -L/usr/local/lib -lmpv
+    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/lib -lmpv
 }
 
 win32 {
-    INCLUDEPATH += \
-        $$PYTHON2_PATH\\include \
-        $$LIBMPV_PATH\\include
-    LIBS += \
-        $$PYTHON2_PATH\\libs\\python27.lib \
-        $$LIBMPV_PATH\\i686\\mpv.lib
+    INCLUDEPATH += $$LIBMPV_PATH\\include
+    LIBS += $$LIBMPV_PATH\\i686\\mpv.lib
     QMAKE_CFLAGS  -= -Zc:strictStrings
     QMAKE_CXXFLAGS  -= -Zc:strictStrings
     QMAKE_CFLAGS_RELEASE  -= -Zc:strictStrings

@@ -2,7 +2,6 @@
 #include "ui_detailview.h"
 #include "accessmanager.h"
 #include "parserbase.h"
-#include "python_wrapper.h"
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
@@ -99,10 +98,7 @@ void DetailView::onPlay()
     if (current_row < 0)
         return;
     QString url = urls[current_row];
-    if (url.startsWith("python:"))
-        PyRun_SimpleString(url.toUtf8().mid(7).constData());
-    else
-        parseUrl(url, false);
+    parseUrl(url, false);
 }
 
 
@@ -112,8 +108,5 @@ void DetailView::onDownload()
     if (current_row < 0)
         return;
     QString url = urls[current_row];
-    if (url.startsWith("python:"))
-        PyRun_SimpleString(url.toUtf8().mid(7).constData());
-    else
-        parseUrl(url, true);
+    parseUrl(url, true);
 }

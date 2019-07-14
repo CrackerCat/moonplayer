@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QDir>
 #include <QSettings>
-#include "pyapi.h"
 #include "platform/application.h"
 #include "platform/detectopengl.h"
 #include "platform/paths.h"
@@ -60,9 +59,6 @@ int main(int argc, char *argv[])
     printf("Initialize settings...\n");
     initSettings();
 
-    printf("Initialize API for Python...\n");
-    initPython();
-
     // Translate moonplayer
     printf("Initialize language support...\n");
     QTranslator qtTranslator;
@@ -85,7 +81,6 @@ int main(int argc, char *argv[])
 #endif
 
     a.exec();
-    Py_Finalize();
     delete player_view;
     return 0;
 }

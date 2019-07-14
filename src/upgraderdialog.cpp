@@ -1,7 +1,6 @@
 #include "upgraderdialog.h"
 #include "ui_upgraderdialog.h"
 #include <QProcess>
-#include "python_wrapper.h"
 #include "platform/paths.h"
 
 UpgraderDialog *upgraderDialog = NULL;
@@ -32,7 +31,7 @@ void UpgraderDialog::runUpgrader()
     args << (getAppPath() + "/plugins/upgrade_extras.py");
     ui->buttonBox->setEnabled(false);
     ui->textEdit->clear();
-    process->start(PYTHON_BIN, args, QProcess::ReadOnly);
+    process->start(PYTHON_PATH, args, QProcess::ReadOnly);
     exec();
 }
 
