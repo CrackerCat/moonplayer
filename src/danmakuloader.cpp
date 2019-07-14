@@ -57,10 +57,14 @@ void DanmakuLoader::onXmlDownloaded()
     if (reply->error() == QNetworkReply::NoError)
     {
         QStringList args;
+        args << getAppPath() + "/plugins/danmaku2ass_py3.py";
 
         // Output file
         outputFile = QDir::temp().filePath("moonplayer_danmaku.ass").toUtf8();
         args << "-o" << outputFile;
+
+        // Size
+        args << "-s" << QString().sprintf("%dx%d", width, height);
 
         // Font
 #ifdef Q_OS_MAC
@@ -108,7 +112,9 @@ void DanmakuLoader::onXmlDownloaded()
 
         // run
         process->start(PYTHON_PATH, args);
+        process->waitForStarted(-1);
         process->write(reply->readAll());
+        process->closeWriteChannel();
     }
     reply->deleteLater();
     reply = NULL;
@@ -116,5 +122,6 @@ void DanmakuLoader::onXmlDownloaded()
 
 void DanmakuLoader::onProcessFinished()
 {
+    qDebug("%s", process->readAllStandardError().constData());
     emit finished(outputFile);
 }
