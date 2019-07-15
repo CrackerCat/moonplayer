@@ -77,6 +77,7 @@ PlayerCore::PlayerCore(QWidget *parent) :
     setFocusPolicy(Qt::StrongFocus);
 
     // create mpv instance
+    setlocale(LC_NUMERIC, "C");
     mpv = mpv_create();
     if (!mpv)
     {

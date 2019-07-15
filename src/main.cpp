@@ -2,7 +2,6 @@
 #include <QTranslator>
 #include "settingsdialog.h"
 #include "accessmanager.h"
-#include <locale.h>
 #include <QDebug>
 #include <QDir>
 #include <QSettings>
@@ -23,6 +22,7 @@
 
 int main(int argc, char *argv[])
 {
+    qputenv("LC_NUMERIC", "C");
     qputenv("QTWEBENGINE_REMOTE_DEBUGGING", "19260");
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
@@ -50,9 +50,6 @@ int main(int argc, char *argv[])
         freopen("CON", "r", stdin);
     }
 #endif
-
-    //for mpv
-    setlocale(LC_NUMERIC, "C");
 
     //init
     access_manager = new NetworkAccessManager(&a);
