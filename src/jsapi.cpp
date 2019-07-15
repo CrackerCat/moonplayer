@@ -1,4 +1,5 @@
 #include "jsapi.h"
+#include <QFile>
 #include <QMessageBox>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -53,7 +54,9 @@ static void get_post_content(const QString &url, const QByteArray &postData, con
         QJSValueList args;
         args << QString::fromUtf8(reply->readAll());
         QJSValue func = callbackFunc;
-        func.call(args);
+        QJSValue retVal = func.call(args);
+        if (retVal.isError())
+            printJSError(retVal);
     });
 }
 
@@ -86,7 +89,7 @@ void JSAPI::show_resources(const QJSValue &list)
     QVariantList resList = list.toVariant().toList();
     foreach (QVariant item, resList) {
         QVariantHash dict = item.toHash();
-        res_library->addItem(dict["title"].toString(), dict["url"].toString(), dict["image_url"].toString());
+        res_library->addItem(dict["title"].toString(), dict["image_url"].toString(), dict["url"].toString());
     }
 }
 
@@ -106,4 +109,24 @@ void JSAPI::finish_parsing(const QJSValue &dict)
     qDebug() << data;
     parser_webcatch->onParseFinished(data);
 #endif
+}
+
+
+// Error handling
+void printJSError(const QJSValue &errValue)
+{
+    QString filename = errValue.property("fileName").toString();
+    int lineNumber = errValue.property("lineNumber").toInt();
+    QFile file(filename);
+    QByteArray line;
+    if (file.open(QFile::ReadOnly | QFile::Text))
+    {
+        line = file.readAll().split('\n')[lineNumber - 1];
+        file.close();
+    }
+    qDebug("In file \"%s\", line %i:\n  %s\n%s",
+           filename.toUtf8().constData(),
+           lineNumber,
+           line.constData(),
+           errValue.toString().toUtf8().constData());
 }

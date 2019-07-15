@@ -1,6 +1,7 @@
 #include "extractor.h"
 #include "platform/paths.h"
 #include <QDir>
+#include "jsapi.h"
 
 Extractor **extractors = NULL;
 int n_extractors = 0;
@@ -73,7 +74,10 @@ QString Extractor::parse(const QByteArray &data)
     args << QString::fromUtf8(data);
     QJSValue result = parseFunc.call(args);
     if (result.isError())
-        return "JS Error: " + result.toString() + "\n\nResponse Content: " + QString::fromUtf8(data);
+    {
+        printJSError(result);
+        return result.toString() + "\n\nResponse Content: " + QString::fromUtf8(data);
+    }
     return QString();
 }
 

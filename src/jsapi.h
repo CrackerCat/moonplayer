@@ -22,4 +22,7 @@ public:
 
 extern JSAPI apiObject;
 
+// Error handling
+void printJSError(const QJSValue &errValue);
+
 #endif // JSAPI_H

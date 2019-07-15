@@ -1,5 +1,6 @@
 #include "resplugin.h"
 #include <QDir>
+#include "jsapi.h"
 #include "platform/paths.h"
 
 /************************
@@ -65,7 +66,7 @@ void ResPlugin::explore(const QString &tag, const QString &region, int page)
     args << tag << region << page;
     QJSValue retVal = exploreFunc.call(args);
     if (retVal.isError())
-        qDebug("JS Error:\n    In line %i:\n    %s", retVal.property("lineNumber").toInt(), retVal.toString().toUtf8().constData());
+        printJSError(retVal);
 }
 
 void ResPlugin::search(const QString &key, int page)
@@ -74,7 +75,7 @@ void ResPlugin::search(const QString &key, int page)
     args << key << page;
     QJSValue retVal = searchFunc.call(args);
     if (retVal.isError())
-        qDebug("JS Error:\n    In line %i:\n    %s", retVal.property("lineNumber").toInt(), retVal.toString().toUtf8().constData());
+        printJSError(retVal);
 }
 
 void ResPlugin::loadItem(const QString &flag)
@@ -83,5 +84,5 @@ void ResPlugin::loadItem(const QString &flag)
     args << flag;
     QJSValue retVal = loadItemFunc.call(args);
     if (retVal.isError())
-        qDebug("JS Error:\n    In line %i:\n    %s", retVal.property("lineNumber").toInt(), retVal.toString().toUtf8().constData());
+        printJSError(retVal);
 }
