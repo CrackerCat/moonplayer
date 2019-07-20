@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "accessmanager.h"
 #include <stdio.h>
+#include <locale.h>
 #include <mpv/client.h>
 #include <QCoreApplication>
 #include <QDir>
